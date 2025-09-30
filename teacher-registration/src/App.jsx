@@ -30,7 +30,8 @@ function App() {
     setMessage('');
 
     try {
-      const response = await fetch('http://203.83.46.48:40700/api/v1/auth/teacher/register/', {
+      // console.log(import.meta.env.VITE_API_BASE_URL);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/teacher/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
