@@ -31,13 +31,12 @@ function App() {
 
     try {
       // console.log(import.meta.env.VITE_API_BASE_URL);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/teacher/register/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      const response = await fetch('/api/v1/auth/teacher/register/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(formData),
+            });
+
 
       const data = await response.json();
 
@@ -51,6 +50,7 @@ function App() {
           last_name: '',
           password: ''
         });
+        
       } else {
         setMessage(`Error: ${JSON.stringify(data)}`);
       }
