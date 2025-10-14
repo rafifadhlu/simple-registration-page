@@ -30,32 +30,22 @@ function App() {
     setMessage('');
 
     try {
-      // console.log(import.meta.env.VITE_API_BASE_URL);
-      const response = await fetch('/api/v1/auth/teacher/register/', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(formData),
-            });
+      const response = await fetch('/api/proxy/api/v1/auth/teacher/register/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
-
-      if (response.ok) {
-        setMessage('Registration successful!');
-        // Reset form
-        setFormData({
-          username: '',
-          email: '',
-          first_name: '',
-          last_name: '',
-          password: ''
-        });
-        
-      } else {
-        setMessage(`Error: ${JSON.stringify(data)}`);
-      }
+      console.log('Parsed data:', data);
+      setMessage('Registration successful!');
     } catch (error) {
-      setMessage(`Error: ${error.message}`);
+      console.error('Fetch error:', error);
+      setMessage('Registration failed: ' + error.message);
     } finally {
       setLoading(false);
     }
