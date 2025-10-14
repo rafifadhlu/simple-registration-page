@@ -8,25 +8,47 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Parse the URL to extract the path after /api/proxy
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const path = url.pathname.replace('/api/proxy', '');
-  
-  const apiUrl = `http://203.83.46.48:40700${path}`;
-
-  console.log('=== PROXY REQUEST ===');
-  console.log('Original URL:', req.url);
-  console.log('Extracted path:', path);
-  console.log('Target API URL:', apiUrl);
-  console.log('Method:', req.method);
-  console.log('Body:', req.body);
-
   try {
+    // Debug: Log the full request details
+    const debugInfo = {
+      url: req.url,
+      method: req.method,
+      headers: req.headers,
+      body: req.body
+    };
+
+    console.log('=== DEBUG INFO ===');
+    console.log(JSON.stringify(debugInfo, null, 2));
+
+    // Extract path after /api/proxy
+    let path = req.url;
+    
+    // Remove /api/proxy from the beginning
+    if (path.startsWith('/api/proxy')) {
+      path = path.substring('/api/proxy'.length);
+    }
+    
+    // If path is empty or just /, return error
+    if (!path || path === '/') {
+      return res.status(400).json({
+        error: 'No API path provided',
+        usage: 'Call /api/proxy/api/v1/auth/teacher/register/',
+        received: req.url
+      });
+    }
+
+    const apiUrl = `http://203.83.46.48:40700${path}`;
+
+    console.log('=== PROXY REQUEST ===');
+    console.log('Original URL:', req.url);
+    console.log('Extracted path:', path);
+    console.log('Target API URL:', apiUrl);
+
     const fetchOptions = {
       method: req.method,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',  // Force JSON response from DRF
+        'Accept': 'application/json',
       },
     };
 
@@ -35,9 +57,9 @@ export default async function handler(req, res) {
       fetchOptions.body = typeof req.body === 'string' 
         ? req.body 
         : JSON.stringify(req.body);
+      
+      console.log('Request body:', fetchOptions.body);
     }
-
-    console.log('Fetch options:', JSON.stringify(fetchOptions, null, 2));
 
     const response = await fetch(apiUrl, fetchOptions);
     const text = await response.text();
@@ -45,14 +67,14 @@ export default async function handler(req, res) {
     console.log('=== BACKEND RESPONSE ===');
     console.log('Status:', response.status);
     console.log('Content-Type:', response.headers.get('content-type'));
-    console.log('Body preview:', text.substring(0, 300));
+    console.log('Body:', text.substring(0, 500));
 
     // Try to parse as JSON
     try {
       const data = JSON.parse(text);
       return res.status(response.status).json(data);
     } catch (e) {
-      console.error('Failed to parse JSON:', e.message);
+      console.error('Failed to parse JSON');
       return res.status(response.status).json({
         error: 'Backend returned non-JSON response',
         status: response.status,
