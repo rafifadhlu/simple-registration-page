@@ -2,25 +2,19 @@ export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Get the path array from query
-  const { path } = req.query;
-  
-  // Reconstruct the full path
-  const fullPath = Array.isArray(path) ? '/' + path.join('/') : '/' + path;
-  
-  // Backend URL
-  const backendUrl = `http://203.83.46.48:40700${fullPath}`;
+  // The backend URL is hardcoded for simplicity
+  const backendUrl = 'http://203.83.46.48:40700/api/v1/auth/teacher/register/';
 
-  console.log('Proxying to:', backendUrl);
+  console.log('=== PROXY CALLED ===');
   console.log('Method:', req.method);
   console.log('Body:', req.body);
+  console.log('Calling:', backendUrl);
 
   try {
     const options = {
@@ -31,19 +25,19 @@ export default async function handler(req, res) {
       },
     };
 
-    // Add body for POST/PUT/PATCH
-    if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+    if (req.method === 'POST') {
       options.body = JSON.stringify(req.body);
     }
 
     const response = await fetch(backendUrl, options);
     const data = await response.json();
 
-    console.log('Backend response:', response.status);
+    console.log('Backend status:', response.status);
+    console.log('Backend response:', data);
+
     return res.status(response.status).json(data);
-    
   } catch (error) {
-    console.error('Proxy error:', error);
+    console.error('Error:', error);
     return res.status(500).json({
       error: 'Proxy failed',
       message: error.message

@@ -30,27 +30,27 @@ function App() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/proxy/api/v1/auth/teacher/register/', {
+      const response = await fetch('/api/proxy', {  // ← Just /api/proxy
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Parsed data:', data);
+      console.log('Success:', data);
       setMessage('Registration successful!');
     } catch (error) {
-      console.error('Fetch error:', error);
+      console.error('Error:', error);
       setMessage('Registration failed: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <>
       <div className="navbar bg-white shadow-sm">
